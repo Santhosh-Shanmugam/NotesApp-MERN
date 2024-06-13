@@ -106,6 +106,34 @@ app.post("/login", async (req, res) => {
   }
 });
 
+app.get("/get-user", authenticateToken, async (req, res) => {
+    const user = req.user; // Ensure this correctly fetches the authenticated user
+
+    try {
+        // Find the user by ID
+        const isUser = await User.findOne({ _id: user._id });
+
+        // If user not found, return 401 Unauthorized
+        if (!isUser) {
+            return res.sendStatus(401);
+        }
+
+        // Return user information
+        return res.json({
+            user: isUser,
+            message: "",
+        });
+    } catch (error) {
+        console.error(error);
+        // Return internal server error if an error occurs
+        return res.status(500).json({
+            error: true,
+            message: "Internal server error",
+        });
+    }
+});
+
+
 app.post("/add-note", authenticateToken, async (req, res) => {
     const { title, content, tags } = req.body;
     const { user } = req.user;
@@ -139,7 +167,6 @@ app.post("/add-note", authenticateToken, async (req, res) => {
     }
 });
 
-// Route Handler for Editing a Note
 app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
     const noteId = req.params.noteId;
     const { title, content, tags, isPinned } = req.body;
@@ -167,6 +194,102 @@ app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
         if (content) note.content = content;
         if (tags) note.tags = tags;
         if (isPinned !== undefined) note.isPinned = isPinned;
+
+        // Save the updated note
+        await note.save();
+
+        // Return success response
+        return res.json({
+            error: false,
+            note,
+            message: "Note updated successfully",
+        });
+    } catch (error) {
+        console.error(error);
+        // Return internal server error if an error occurs
+        return res.status(500).json({
+            error: true,
+            message: "Internal server error",
+        });
+    }
+});
+
+app.get("/get-all-note/", authenticateToken, async (req, res) => {
+    const {user} = req.user;
+
+    try {
+        // Find the note by ID and user ID
+        const notes = await Note.find({
+            userId: user._id // Ensure note belongs to the authenticated user
+        }).sort({ isPinned: -1 
+        });
+
+        // Return success response
+        return res.json({
+            error: false,
+            notes,
+            message: "All Note recived successfully",
+        });
+    } catch (error) {
+        console.error(error);
+        // Return internal server error if an error occurs
+        return res.status(500).json({
+            error: true,
+            message: "Internal server error",
+        });
+    }
+});
+
+app.delete("/del-note/:noteId", authenticateToken, async (req, res) => {
+    const noteId = req.params.noteId;
+    const { user } = req.user;
+
+    try {
+        const note = await Note.findOne({
+            _id: noteId,
+            userId: user._id // Ensure note belongs to the authenticated user
+        });
+
+        // If note not found, return 404 error
+        if (!note) {
+            return res.status(404).json({ error: true, message: "Note not found" });
+        }
+
+        await Note.deleteOne({_id: noteId, userId: user._id});
+
+        return res.json({
+            error: false,
+            message: "Note deleted successfully",
+        });
+    } catch (error) {
+        console.error(error);
+        // Return internal server error if an error occurs
+        return res.status(500).json({
+            error: true,
+            message: "Internal server error",
+        });
+    }
+});
+
+app.put("/update-note-isPinned/:noteId", authenticateToken, async (req, res) => {
+    const noteId = req.params.noteId;
+    const { isPinned } = req.body;
+    const {user} = req.user; // Ensure this correctly fetches the authenticated user
+
+    try {
+        // Find the note by ID and user ID
+        const note = await Note.findOne({
+            _id: noteId,
+            userId: user._id // Ensure note belongs to the authenticated user
+        });
+
+        // If note not found, return 404 error
+        if (!note) {
+            return res.status(404).json({ error: true, message: "Note not found" });
+        }
+
+        // Update the isPinned status
+        note.isPinned = isPinned;
 
         // Save the updated note
         await note.save();

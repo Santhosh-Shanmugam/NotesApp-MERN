@@ -107,30 +107,18 @@ app.post("/login", async (req, res) => {
 });
 
 app.get("/get-user", authenticateToken, async (req, res) => {
-    const user = req.user; // Ensure this correctly fetches the authenticated user
+    const {user} = req.user;
 
-    try {
-        // Find the user by ID
-        const isUser = await User.findOne({ _id: user._id });
+    const isUser = await User.findOne({ _id: user._id });
 
-        // If user not found, return 401 Unauthorized
-        if (!isUser) {
-            return res.sendStatus(401);
-        }
-
-        // Return user information
-        return res.json({
-            user: isUser,
-            message: "",
-        });
-    } catch (error) {
-        console.error(error);
-        // Return internal server error if an error occurs
-        return res.status(500).json({
-            error: true,
-            message: "Internal server error",
-        });
+    if (!isUser) {
+        return res.sendStatus(401);
     }
+
+    return res.json({
+        user: {fullname : isUser.fullname , Email: isUser.email , "_id":isUser._id, createdOn : isUser.createdOn,},
+        message: "",
+    });
 });
 
 

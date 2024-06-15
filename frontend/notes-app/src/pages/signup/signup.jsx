@@ -1,9 +1,9 @@
 import React,{useState} from 'react'
-import Navbar from '../../components/Navbar/Navbar'
+import Navbar from '../../components/Navbar/Navbarhome'
 import {Link , useNavigate} from "react-router-dom"
 import PasswordInput from "../../components/Input/PasswordInput"
 import { validateEmail } from "../../utils/helper"
-import axiosInstance from '../../utils/axiosInstance';
+import axios from 'axios';
 
 const signup = () => {
 
@@ -34,7 +34,7 @@ const signup = () => {
       setError("");
       //sign api call
       try {
-        const response = await axiosInstance.post("/create-account", {
+        const response = await axios.post("http://localhost:8000/create-account", {
           fullname : name,
           email: email,
           password: password,
@@ -43,15 +43,11 @@ const signup = () => {
         console.log(response.data); // Log the response to verify it contains the access token and perhaps user data
   
         // Handle successful register response
-        if (response.data && response.data.error) {
-          setError(response.data.message);
-          return;
-        }
+        const { token, user: userData } = response.data;
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("data", JSON.stringify(userData ));
+        navigate('/dashboard')
 
-        if (response.data && response.data.accessToken) {
-          localStorage.setItem("token",response.data.accessToken);
-          navigate("/dashboard");
-        }
       } catch (error) {
         if (error.response && error.response.data && error.response.data.message) {
           setError(error.response.data.message);

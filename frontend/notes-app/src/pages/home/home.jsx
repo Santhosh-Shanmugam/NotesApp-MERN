@@ -6,37 +6,35 @@ import AddEditNotes from './AddEditNotes';
 import moment from "moment";
 import Modal from 'react-modal';
 import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../utils/axiosInstance';
+import axios from 'axios'
 
 const Home = () => {
+  const data=JSON.parse(localStorage.getItem("data"));  
   const [openAddEditModel, setOpenAddEditModel] = useState({
     isShown: false,
     type: "add",
     data: null,
   });
+
   const [allNote, setAllNote] = useState([]);
   const [userInfo, setUserInfo] = useState(null);
   const navigate = useNavigate();
 
   // Get user info
   const getUserInfo = async () => {
-    try {
-      const response = await axiosInstance.get("/get-user");
-      if (response.data && response.data.user) {
-        setUserInfo(response.data.user);
-      }
-    } catch (error) {
-      if (error.response && error.response.status === 401) {
-        localStorage.clear();
-        navigate("/login");
-      }
-    }
+        setUserInfo(data);
   };
 
   // Get all notes
   const getAllNote = async () => {
     try {
-      const response = await axiosInstance.get("/get-all-note");
+      const token=localStorage.getItem("token");
+      const response = await axios.post("http://localhost:8000/get-all-note",{},
+        {
+          headers:{
+            Authorization:token
+          }
+        });
       if (response.data && response.data.notes) {
         console.log(response.data.notes); // Log the fetched notes
         setAllNote(response.data.notes);
@@ -52,6 +50,7 @@ const Home = () => {
     return () => {};
   }, []);
 
+  // console.log(userInfo); 
   return (
     <>
       <Navbar userInfo={userInfo} />
@@ -59,7 +58,7 @@ const Home = () => {
         <div className="grid grid-cols-3 gap-4 mt-8">
           {allNote.map((item, index) => (
             <NoteCard
-              key={item._id}
+              id={item._id}
               title={item.title}
               date={moment(item.createdOn).format('Do MMM YYYY')}
               content={item.content}
@@ -100,6 +99,7 @@ const Home = () => {
           onClose={() => {
             setOpenAddEditModel({ isShown: false, type: "add", data: null });
           }}
+          getAllNotes = {getAllNote}
         />
       </Modal>
     </>

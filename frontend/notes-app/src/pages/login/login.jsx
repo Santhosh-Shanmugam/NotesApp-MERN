@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import Navbar from '../../components/Navbar/Navbar';
+import Navbar from '../../components/Navbar/Navbarhome';
 import { Link, useNavigate } from "react-router-dom";
 import PasswordInput from "../../components/Input/PasswordInput";
 import { validateEmail } from "../../utils/helper";
-import axiosInstance from '../../utils/axiosInstance';
+import axios from 'axios'
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -28,7 +28,7 @@ const Login = () => {
 
     // Calling Login API
     try {
-      const response = await axiosInstance.post("/login", {
+      const response = await axios.post("http://localhost:8000/login", {
         email: email,
         password: password,
       });
@@ -36,10 +36,14 @@ const Login = () => {
       console.log(response.data); // Log the response to verify it contains the access token and perhaps user data
 
       // Handle successful login response
-      if (response.data && response.data.accessToken) {
-        localStorage.setItem("token", response.data.accessToken);
-        navigate("/dashboard");
-      }
+      const { token, user: userData } = response.data;
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("data", JSON.stringify(userData ));
+        navigate('/dashboard')
+
+        
+       
+      
     } catch (error) {
       if (error.response && error.response.data && error.response.data.message) {
         setError(error.response.data.message);

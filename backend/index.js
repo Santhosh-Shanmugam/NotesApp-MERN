@@ -24,7 +24,7 @@ mongoose.connect(config.connectionString)
   .then(() => {
     console.log("Connected to MongoDB");
   })
-  .catch(err => {
+  .catch(error => {
     console.error("MongoDB connection error:", err);
   });
 
@@ -57,8 +57,8 @@ app.post("/create-account", async (req, res) => {
 
         await user.save();
 
-        const accessToken = jwt.sign({ user }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: "3600m",
+        const accessToken = jwt.sign({ user }, process.env.JWT_SECRET, {
+            expiresIn: "1d",
         });
 
         return res.json({
@@ -77,54 +77,59 @@ app.post("/create-account", async (req, res) => {
 });
 
 app.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email) return res.status(400).json({ message: "Email is required" });
-  if (!password) return res.status(400).json({ message: "Password is required" });
-
-  const userinfo = await User.findOne({ email: email });
-
-  if (!userinfo) return res.status(400).json({ message: "User not found" });
-
-  if (userinfo.password === password) {
-    const user = { user: userinfo };
-    const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-      expiresIn: "1h",
-    });
-
-    return res.json({
-      error: false,
-      message: "Login Successfully",
-      email,
-      accessToken,
-    });
-  } else {
-    return res.status(400).json({
-      error: true,
-      message: "Invalid Credentials",
-    });
-  }
+    try {
+        const user = await User.findOne({ email: req.body.email });
+        
+        if (!user) {
+            return res.send("Invalid Email or Password");
+        }
+        if (req.body.password!==user.password) {
+            return res.send("Invalid Email or Password");
+        } else {
+            const token = jwt.sign({ email: user.email }, process.env.JWT_SECRET, {
+                expiresIn: "1d",
+            });
+            console.log(token)
+            res.send({ token, user }); // Send user details along with token
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "Error logging in", success: false, error });
+    }
 });
+const verifyToken = (token) => {
+    try {
+        return jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+        throw new Error('Invalid token');
+    }
+};
 
-app.get("/get-user", authenticateToken, async (req, res) => {
-    const {user} = req.user;
+const authenticateUser = (req, res, next) => {
+    const token = req.headers.authorization;
 
-    const isUser = await User.findOne({ _id: user._id });
-
-    if (!isUser) {
-        return res.sendStatus(401);
+    if (!token) {
+        return res.status(401).json({ error: 'User not allowed' });
     }
 
-    return res.json({
-        user: {fullname : isUser.fullname , Email: isUser.email , "_id":isUser._id, createdOn : isUser.createdOn,},
-        message: "",
-    });
-});
+    try {
+        const decodedToken = verifyToken(token);
+
+        req.user = decodedToken;
+        next();
+    } catch (error) {
+        console.error(error);
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+};
+
+app.use(authenticateUser);
 
 
-app.post("/add-note", authenticateToken, async (req, res) => {
-    const { title, content, tags } = req.body;
-    const { user } = req.user;
+
+app.post("/add-note", async (req, res) => {
+    const { title, content, tags,data } = req.body;
+
 
     if (!title) return res.status(400).json({ error: true, message: "Title is required" });
     if (!content) return res.status(400).json({ error: true, message: "Content is required" });
@@ -134,7 +139,7 @@ app.post("/add-note", authenticateToken, async (req, res) => {
             title,
             content,
             tags: tags || [],
-            userId: user._id,
+            userId: data._id,
             isPinned: false,
             createdOn: Date.now(),
         });
@@ -155,68 +160,45 @@ app.post("/add-note", authenticateToken, async (req, res) => {
     }
 });
 
-app.put("/edit-note/:noteId", authenticateToken, async (req, res) => {
-    const noteId = req.params.noteId;
-    const { title, content, tags, isPinned } = req.body;
-    const userId = req.user.user._id; // Accessing user ID from decoded token
 
-    // Check if any changes are provided
-    if (!title && !content && !tags) {
-        return res.status(400).json({ error: true, message: "No changes provided" });
-    }
-
+  
+// // PUT route to edit a note
+app.put("/edit-note/:id", async (req, res) => {
     try {
-        // Find the note by ID and user ID
-        const note = await Note.findOne({
-            _id: noteId,
-            userId: userId // Ensure note belongs to the authenticated user
-        });
+        const { id } = req.params;
+        const { title, content, tags } = req.body;
 
-        // If note not found, return 404 error
-        if (!note) {
-            return res.status(404).json({ error: true, message: "Note not found" });
+        // Check if any changes are provided
+        if (!title && !content && !tags) {
+            return res.status(400).json({ error: true, message: "No changes provided" });
         }
 
         // Update the note fields if provided
-        if (title) note.title = title;
-        if (content) note.content = content;
-        if (tags) note.tags = tags;
-        if (isPinned !== undefined) note.isPinned = isPinned;
+        const updateData = {};
+        if (title) updateData.title = title;
+        if (content) updateData.content = content;
+        if (tags) updateData.tags = tags;
 
-        // Save the updated note
-        await note.save();
-
-        // Return success response
-        return res.json({
-            error: false,
-            note,
-            message: "Note updated successfully",
-        });
+        const result = await Note.findByIdAndUpdate(id, updateData, { new: true });
+        res.send(result);
     } catch (error) {
         console.error(error);
-        // Return internal server error if an error occurs
-        return res.status(500).json({
-            error: true,
-            message: "Internal server error",
-        });
+        res.status(500).json({ error: true, message: "Server error" });
     }
 });
 
-app.get("/get-all-note/", authenticateToken, async (req, res) => {
-    const {user} = req.user;
+  
+app.post("/get-all-note", async (req, res) => {
+  
 
     try {
         // Find the note by ID and user ID
-        const notes = await Note.find({
-            userId: user._id // Ensure note belongs to the authenticated user
-        }).sort({ isPinned: -1 
+        const notes = await Note.find().sort({ isPinned: -1 
         });
 
         // Return success response
         return res.json({
-            error: false,
-            notes,
-            message: "All Note recived successfully",
+            notes
         });
     } catch (error) {
         console.error(error);
@@ -228,36 +210,36 @@ app.get("/get-all-note/", authenticateToken, async (req, res) => {
     }
 });
 
-app.delete("/del-note/:noteId", authenticateToken, async (req, res) => {
-    const noteId = req.params.noteId;
-    const { user } = req.user;
+app.delete("/delete-note/:id", async (req, res) => {
 
     try {
-        const note = await Note.findOne({
-            _id: noteId,
-            userId: user._id // Ensure note belongs to the authenticated user
-        });
-
-        // If note not found, return 404 error
-        if (!note) {
-            return res.status(404).json({ error: true, message: "Note not found" });
-        }
-
-        await Note.deleteOne({_id: noteId, userId: user._id});
-
-        return res.json({
-            error: false,
-            message: "Note deleted successfully",
-        });
-    } catch (error) {
+        const result = await Note.findByIdAndDelete(req.params.id);
+    } 
+    catch (error) {
         console.error(error);
-        // Return internal server error if an error occurs
-        return res.status(500).json({
-            error: true,
-            message: "Internal server error",
-        });
     }
 });
+
+
+// // try {
+//     const user = await User.findOne({ email: req.body.email });
+
+//     if (!user) {
+//       return res.status(400).send("Invalid Email or Password");
+//     }
+//     if (req.body.password !== user.password) {
+//       return res.status(400).send("Invalid Email or Password");
+//     } else {
+//       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+//         expiresIn: "1d",
+//       });
+//       res.send({ token, user }); // Send user details along with token
+//     }
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).send({ message: "Error logging in", success: false, error });
+//   }
+// });
 
 app.put("/update-note-isPinned/:noteId", authenticateToken, async (req, res) => {
     const noteId = req.params.noteId;

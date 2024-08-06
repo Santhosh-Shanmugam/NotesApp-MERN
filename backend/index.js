@@ -24,7 +24,7 @@ mongoose.connect(config.connectionString)
   .then(() => {
     console.log("Connected to MongoDB");
   })
-  .catch(error => {
+  .catch(err => {
     console.error("MongoDB connection error:", err);
   });
 
@@ -158,6 +158,8 @@ app.post("/add-note", async (req, res) => {
             message: "Internal server error",
         });
     }
+
+    res.redirect('/dashboard');
 });
 
 
@@ -185,6 +187,7 @@ app.put("/edit-note/:id", async (req, res) => {
         console.error(error);
         res.status(500).json({ error: true, message: "Server error" });
     }
+    res.redirect('/dashboard');
 });
 
   
@@ -218,28 +221,10 @@ app.delete("/delete-note/:id", async (req, res) => {
     catch (error) {
         console.error(error);
     }
+
+    res.redirect('/dashboard');
 });
 
-
-// // try {
-//     const user = await User.findOne({ email: req.body.email });
-
-//     if (!user) {
-//       return res.status(400).send("Invalid Email or Password");
-//     }
-//     if (req.body.password !== user.password) {
-//       return res.status(400).send("Invalid Email or Password");
-//     } else {
-//       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-//         expiresIn: "1d",
-//       });
-//       res.send({ token, user }); // Send user details along with token
-//     }
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).send({ message: "Error logging in", success: false, error });
-//   }
-// });
 
 app.put("/update-note-isPinned/:noteId", authenticateToken, async (req, res) => {
     const noteId = req.params.noteId;

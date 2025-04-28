@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import Navbar from '../../components/Navbar/Navbarhome';
+import React, { useState } from "react";
+import Navbar from "../../components/Navbar/Navbarhome";
 import { Link, useNavigate } from "react-router-dom";
 import PasswordInput from "../../components/Input/PasswordInput";
-import axios from 'axios';
+import axios from "axios";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
-  
+
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -27,15 +27,18 @@ const Login = () => {
 
     // Calling Login API
     try {
-      const response = await axios.post("http://localhost:8000/login", {
-        email: email,
-        password: password,
-      });
+      const response = await axios.post(
+        "https://notesapp-7sbx.onrender.com/login",
+        {
+          email: email,
+          password: password,
+        }
+      );
 
       if (response.data.success) {
         localStorage.setItem("token", `Bearer ${response.data.token}`);
         localStorage.setItem("data", JSON.stringify(response.data.user));
-        navigate('/dashboard');
+        navigate("/dashboard");
       } else {
         setError(response.data.message || "Login failed");
       }
@@ -53,9 +56,9 @@ const Login = () => {
           <form onSubmit={handleLogin}>
             <h4 className="text-2xl mb-7">Login</h4>
 
-            <input 
-              type="text" 
-              placeholder="E-mail" 
+            <input
+              type="text"
+              placeholder="E-mail"
               className="w-full text-sm bg-transparent border border-gray-300 px-5 py-3 rounded mb-4 focus:outline-none"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -67,7 +70,10 @@ const Login = () => {
             />
 
             {error && <p className="text-red-500 text-xs pb-1">{error}</p>}
-            <button type="submit" className="w-full text-sm bg-primary text-white p-2 rounded my-1">
+            <button
+              type="submit"
+              className="w-full text-sm bg-primary text-white p-2 rounded my-1"
+            >
               Login
             </button>
 

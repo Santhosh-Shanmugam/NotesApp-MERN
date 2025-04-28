@@ -7,68 +7,99 @@ import moment from "moment";
 import Modal from 'react-modal';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios'
+import { useNotes } from '../../zustand/useNotes';
 
 const Home = () => {
-  const data=JSON.parse(localStorage.getItem("data"));  
+  const data = JSON.parse(localStorage.getItem("data"));
   const [openAddEditModel, setOpenAddEditModel] = useState({
     isShown: false,
     type: "add",
     data: null,
   });
 
-  const [allNote, setAllNote] = useState([]);
+  const { notes, loading, getNotes, updateNote, deleteNote, togglePinNote } = useNotes(); // Use Zustand store
   const [userInfo, setUserInfo] = useState(null);
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredNotes, setFilteredNotes] = useState([]);
 
   // Get user info
   const getUserInfo = async () => {
-        setUserInfo(data);
-  };
-
-  // Get all notes
-  const getAllNote = async () => {
-    try {
-      const token=localStorage.getItem("token");
-      const response = await axios.post("http://localhost:8000/get-all-note",{},
-        {
-          headers:{
-            Authorization:token
-          }
-        });
-      if (response.data && response.data.notes) {
-        console.log(response.data.notes); // Log the fetched notes
-        setAllNote(response.data.notes);
-      }
-    } catch (error) {
-      console.log("An unexpected error occurred", error);
-    }
+    setUserInfo(data);
   };
 
   useEffect(() => {
-    getAllNote();
+    getNotes(); // Use Zustand action instead of local function
     getUserInfo();
     return () => {};
-  }, []);
+  }, [getNotes]);
 
-  // console.log(userInfo); 
+  useEffect(() => {
+    if (searchQuery) {
+      const filtered = notes.filter(note =>
+        note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        note.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        note.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredNotes(filtered);
+    } else {
+      setFilteredNotes(notes);
+    }
+  }, [notes, searchQuery]);
+
+  const handleModalClose = () => {
+    setOpenAddEditModel({ isShown: false, type: "add", data: null });
+    getNotes(); // Refresh notes when modal closes
+  };
+
+  const handleEdit = (note) => {
+    setOpenAddEditModel({
+      isShown: true,
+      type: "edit",
+      data: note
+    });
+  };
+
+  const handleDelete = async (noteId) => {
+    if (window.confirm('Are you sure you want to delete this note?')) {
+      const success = await deleteNote(noteId);
+      if (success) {
+        getNotes();
+      }
+    }
+  };
+
+  const handlePinNote = async (noteId, isPinned) => {
+    await togglePinNote(noteId, isPinned);
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+  };
+
   return (
     <>
-      <Navbar userInfo={userInfo} />
+      <Navbar userInfo={userInfo} onSearch={handleSearch} />
       <div className="container mx-auto">
         <div className="grid grid-cols-3 gap-4 mt-8">
-          {allNote.map((item, index) => (
-            <NoteCard
-              id={item._id}
-              title={item.title}
-              date={moment(item.createdOn).format('Do MMM YYYY')}
-              content={item.content}
-              tags={item.tags}
-              isPinned={item.isPinned}
-              onEdit={() => {}}
-              onDelete={() => {}}
-              onPinNote={() => {}}
-            />
-          ))}
+          {loading ? (
+            <div>Loading...</div>
+          ) : (
+            Array.isArray(filteredNotes) && filteredNotes.map((item) => (
+              <NoteCard
+                key={item._id}
+                _id={item._id}  // Change from id to _id
+                title={item.title}
+                date={item.date}
+                content={item.content}
+                tags={item.tags}
+                isPinned={item.isPinned}
+                onEdit={() => handleEdit(item)}
+                onDelete={() => handleDelete(item._id)}
+                onPinNote={() => handlePinNote(item._id, item.isPinned)}
+              />
+            ))
+          )}
         </div>
       </div>
       <button
@@ -82,24 +113,21 @@ const Home = () => {
 
       <Modal
         isOpen={openAddEditModel.isShown}
-        onRequestClose={() => {
-          setOpenAddEditModel({ isShown: false, type: "add", data: null });
-        }}
+        onRequestClose={handleModalClose}
         style={{
           overlay: {
             backgroundColor: "rgba(0,0,0,0.2)",
           },
         }}
-        contentLabel=""
+        ariaHideApp={false}  // Add this line if you don't want to use Modal.setAppElement
+        contentLabel="Add/Edit Note"
         className="w-[40%] max-h-3/4 bg-white rounded -md mx-auto mt-14 p-5 overflow-scroll"
       >
         <AddEditNotes
           type={openAddEditModel.type}
           noteData={openAddEditModel.data}
-          onClose={() => {
-            setOpenAddEditModel({ isShown: false, type: "add", data: null });
-          }}
-          getAllNotes = {getAllNote}
+          onClose={handleModalClose}
+          getAllNotes={getNotes} // Pass Zustand action instead of local function
         />
       </Modal>
     </>

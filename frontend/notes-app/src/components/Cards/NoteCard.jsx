@@ -1,251 +1,7 @@
-// // import React, { useState } from 'react';
-// // import { MdCreate, MdOutlinePushPin, MdDelete } from "react-icons/md";
-// // import Modal from 'react-modal';
-
-// // // Modal Styles
-// // const customStyles = {
-// //   overlay: {
-// //     backgroundColor: "rgba(0,0,0,0.2)"
-// //   },
-// //   content: {
-// //     width: "40%",
-// //     maxHeight: "75%",
-// //     margin: "auto",
-// //     marginTop: "3.5rem",
-// //     backgroundColor: "white",
-// //     borderRadius: "0.375rem",
-// //     padding: "1.25rem",
-// //     overflow: "scroll"
-// //   }
-// // };
-
-// // // NoteCard Component
-// // const NoteCard = ({ id, title, date, content, tags, isPinned, onEdit, onDelete, onPinNote }) => {
-// //   const [modalIsOpen, setModalIsOpen] = useState(false);
-// //   const [editData, setEditData] = useState({ title: '', content: '', tags: '' });
-
-// //   const openEditModal = (note) => {
-// //     setEditData(note);
-// //     setModalIsOpen(true);
-// //   };
-
-// //   const closeEditModal = () => {
-// //     setModalIsOpen(false);
-// //   };
-
-// //   const handleInputChange = (e) => {
-// //     const { name, value } = e.target;
-// //     setEditData((prevData) => ({
-// //       ...prevData,
-// //       [name]: value,
-// //     }));
-// //   };
-
-// //   const handleSave = () => {
-// //     onEdit(id, editData);
-// //     closeEditModal();
-// //   };
-
-// //   return (
-// //     <div className="border rounded p-4 bg-white hover:shadow-xl transition-all ease-in-out">
-// //       <div className="flex items-center justify-between">
-// //         <div>
-// //           <h6 className="text-sm font-medium">{title}</h6>
-// //           <span className="text-xs text-slate-500">{date}</span>
-// //         </div>
-// //         <MdOutlinePushPin
-// //           className={`text-xl cursor-pointer hover:text-primary ${isPinned ? "text-primary" : "text-slate-300"}`}
-// //           onClick={onPinNote}
-// //         />
-// //       </div>
-// //       <p className="text-xs text-slate-600 mt-2">{content?.slice(0, 60)}</p>
-// //       <div className="flex items-center justify-between mt-2">
-// //         <div className="text-xs text-slate-500">#{tags.join(', ')}</div>
-// //         <div className="flex items-center gap-2">
-// //           <MdCreate
-// //             className="text-xl text-slate-300 cursor-pointer hover:text-primary hover:text-green-600"
-// //             onClick={() => openEditModal({ title, content, tags })}
-// //           />
-// //           <MdDelete
-// //             className="text-xl text-slate-300 cursor-pointer hover:text-primary hover:text-red-500"
-// //             onClick={onDelete}
-// //           />
-// //         </div>
-// //       </div>
-
-// //       <Modal
-// //         isOpen={modalIsOpen}
-// //         onRequestClose={closeEditModal}
-// //         style={customStyles}
-// //         contentLabel="Edit Note"
-// //       >
-// //         <h2>Edit Note</h2>
-// //         <form>
-// //           <div>
-// //             <label>Title</label>
-// //             <input
-// //               type="text"
-// //               name="title"
-// //               value={editData.title}
-// //               onChange={handleInputChange}
-// //               className="w-full border p-2"
-// //             />
-// //           </div>
-// //           <div>
-// //             <label>Content</label>
-// //             <textarea
-// //               name="content"
-// //               value={editData.content}
-// //               onChange={handleInputChange}
-// //               className="w-full border p-2"
-// //             />
-// //           </div>
-// //           <div>
-// //             <label>Tags</label>
-// //             <input
-// //               type="text"
-// //               name="tags"
-// //               value={editData.tags}
-// //               onChange={handleInputChange}
-// //               className="w-full border p-2"
-// //             />
-// //           </div>
-// //           <button type="button" onClick={handleSave} className="mt-4 p-2 bg-blue-500 text-white">
-// //             Save
-// //           </button>
-// //         </form>
-// //       </Modal>
-// //     </div>
-// //   );
-// // };
-
-// // export default NoteCard;
-// import React, { useState } from 'react';
-// import { MdCreate, MdOutlinePushPin, MdDelete } from "react-icons/md";
-// import Modal from 'react-modal';
-
-// // Modal Styles
-// const customStyles = {
-//   overlay: {
-//     backgroundColor: "rgba(0,0,0,0.2)"
-//   },
-//   content: {
-//     width: "40%",
-//     maxHeight: "75%",
-//     margin: "auto",
-//     marginTop: "3.5rem",
-//     backgroundColor: "white",
-//     borderRadius: "0.375rem",
-//     padding: "1.25rem",
-//     overflow: "scroll"
-//   }
-// };
-
-// // NoteCard Component
-// const NoteCard = ({ id, title, date, content, tags, isPinned, onEdit, onDelete, onPinNote }) => {
-//   const [modalIsOpen, setModalIsOpen] = useState(false);
-//   const [editData, setEditData] = useState({ title: '', content: '', tags: '' });
-
-//   const openEditModal = (note) => {
-//     setEditData(note);
-//     setModalIsOpen(true);
-//   };
-
-//   const closeEditModal = () => {
-//     setModalIsOpen(false);
-//   };
-
-//   const handleInputChange = (e) => {
-//     const { name, value } = e.target;
-//     setEditData((prevData) => ({
-//       ...prevData,
-//       [name]: value,
-//     }));
-//   };
-
-//   const handleSave = () => {
-//     onEdit(id, editData);
-//     closeEditModal();
-//   };
-
-//   return (
-//     <div className="border rounded p-4 bg-white hover:shadow-xl transition-all ease-in-out">
-//       <div className="flex items-center justify-between">
-//         <div>
-//           <h6 className="text-sm font-medium">{title}</h6>
-//           <span className="text-xs text-slate-500">{date}</span>
-//         </div>
-//         <MdOutlinePushPin
-//           className={`text-xl cursor-pointer hover:text-primary ${isPinned ? "text-primary" : "text-slate-300"}`}
-//           onClick={onPinNote}
-//         />
-//       </div>
-//       <p className="text-xs text-slate-600 mt-2">{content?.slice(0, 60)}</p>
-//       <div className="flex items-center justify-between mt-2">
-//         <div className="text-xs text-slate-500">#{tags.join(', ')}</div>
-//         <div className="flex items-center gap-2">
-//           <MdCreate
-//             className="text-xl text-slate-300 cursor-pointer hover:text-primary hover:text-green-600"
-//             onClick={() => openEditModal({ title, content, tags })}
-//           />
-//           <MdDelete
-//             className="text-xl text-slate-300 cursor-pointer hover:text-primary hover:text-red-500"
-//             onClick={onDelete}
-//           />
-//         </div>
-//       </div>
-
-//       <Modal
-//         isOpen={modalIsOpen}
-//         onRequestClose={closeEditModal}
-//         style={customStyles}
-//         contentLabel="Edit Note"
-//       >
-//         <h2>Edit Note</h2>
-//         <form>
-//           <div>
-//             <label>Title</label>
-//             <input
-//               type="text"
-//               name="title"
-//               value={editData.title}
-//               onChange={handleInputChange}
-//               className="w-full border p-2"
-//             />
-//           </div>
-//           <div>
-//             <label>Content</label>
-//             <textarea
-//               name="content"
-//               value={editData.content}
-//               onChange={handleInputChange}
-//               className="w-full border p-2"
-//             />
-//           </div>
-//           <div>
-//             <label>Tags</label>
-//             <input
-//               type="text"
-//               name="tags"
-//               value={editData.tags}
-//               onChange={handleInputChange}
-//               className="w-full border p-2"
-//             />
-//           </div>
-//           <button type="button" onClick={handleSave} className="mt-4 p-2 bg-blue-500 text-white">
-//             Save
-//           </button>
-//         </form>
-//       </Modal>
-//     </div>
-//   );
-// };
-
-// export default NoteCard;
 import React, { useState } from 'react';
 import { MdCreate, MdOutlinePushPin, MdDelete } from "react-icons/md";
 import Modal from 'react-modal';
-import axios from 'axios'
+import { useNotes } from '../../zustand/useNotes';
 
 // Modal Styles
 const customStyles = {
@@ -265,52 +21,62 @@ const customStyles = {
 };
 
 // NoteCard Component
-const NoteCard = ({ id, title, date, content, tags, isPinned, onEdit, onDelete, onPinNote }) => {
+const NoteCard = ({ _id, title, date, content, tags, isPinned, onEdit, onDelete, onPinNote }) => {
+  const { updateNote, deleteNote } = useNotes();
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [editData, setEditData] = useState({ title: '', content: '', tags: '' });
+  const [editData, setEditData] = useState({
+    title: title || '',
+    content: content || '',
+    tags: tags || []
+  });
+  const [error, setError] = useState(null);
 
-  const openEditModal = (note) => {
-    setEditData(note);
+  const openEditModal = () => {
+    setEditData({ title, content, tags });
     setModalIsOpen(true);
   };
 
   const closeEditModal = () => {
     setModalIsOpen(false);
+    setError(null);
   };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setEditData((prevData) => ({
-      ...prevData,
-      [name]: value,
+    setEditData(prev => ({
+      ...prev,
+      [name]: value
     }));
   };
 
-  const handleSave = async() => {
-    const token=localStorage.getItem("token");
-    const response=await axios.put(`http://localhost:8000/edit-note/${id}`,editData,{
-      headers:{
-        Authorization:token
+  const handleSave = async () => {
+    try {
+      if (!editData.title || !editData.content) {
+        setError('Title and content are required');
+        return;
       }
-    })
-    console.log(response.data)
-    console.log(editData);
-    console.log(id)
-    onEdit(id, editData);
-    closeEditModal();
+      
+      const success = await updateNote(_id, editData);
+      if (success) {
+        closeEditModal();
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || 'Failed to update note');
+    }
   };
 
   const handleDelete = async () => {
-    const token=localStorage.getItem("token");
-        try {
-      const response = await axios.delete(`http://localhost:8000/delete-note/${id}`,{
-        headers:{
-          Authorization:token
-        }
-      });
-      console.log(response.data);
-    } catch (error) {
-      console.error('Error:', error);
+    if (!_id) {
+      console.error('Note ID is missing');
+      return;
+    }
+
+    if (window.confirm('Are you sure you want to delete this note?')) {
+      try {
+        await deleteNote(_id);
+      } catch (error) {
+        console.error('Error deleting note:', error);
+      }
     }
   };
 
@@ -332,11 +98,11 @@ const NoteCard = ({ id, title, date, content, tags, isPinned, onEdit, onDelete, 
         <div className="flex items-center gap-2">
           <MdCreate
             className="text-xl text-slate-300 cursor-pointer hover:text-primary hover:text-green-600"
-            onClick={() => openEditModal({ title, content, tags })}
+            onClick={onEdit}
           />
           <MdDelete
             className="text-xl text-slate-300 cursor-pointer hover:text-primary hover:text-red-500"
-            onClick={()=>handleDelete()}
+            onClick={handleDelete}
           />
         </div>
       </div>
@@ -347,40 +113,55 @@ const NoteCard = ({ id, title, date, content, tags, isPinned, onEdit, onDelete, 
         style={customStyles}
         contentLabel="Edit Note"
       >
-        <h2>Edit Note</h2>
-        <form>
+        <h2 className="text-xl font-semibold mb-4">Edit Note</h2>
+        <form className="space-y-4">
           <div>
-            <label>Title</label>
+            <label className="block text-sm font-medium mb-1">Title</label>
             <input
               type="text"
               name="title"
               value={editData.title}
               onChange={handleInputChange}
-              className="w-full border p-2"
+              className="w-full border p-2 rounded"
             />
           </div>
           <div>
-            <label>Content</label>
+            <label className="block text-sm font-medium mb-1">Content</label>
             <textarea
               name="content"
               value={editData.content}
               onChange={handleInputChange}
-              className="w-full border p-2"
+              className="w-full border p-2 rounded"
+              rows={4}
             />
           </div>
           <div>
-            <label>Tags</label>
+            <label className="block text-sm font-medium mb-1">Tags</label>
             <input
               type="text"
               name="tags"
-              value={editData.tags}
+              value={Array.isArray(editData.tags) ? editData.tags.join(', ') : ''}
               onChange={handleInputChange}
-              className="w-full border p-2"
+              className="w-full border p-2 rounded"
             />
           </div>
-          <button type="button" onClick={handleSave} className="mt-4 p-2 bg-blue-500 text-white">
-            Save
-          </button>
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={closeEditModal}
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Save
+            </button>
+          </div>
         </form>
       </Modal>
     </div>

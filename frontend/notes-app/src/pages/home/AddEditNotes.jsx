@@ -1,87 +1,36 @@
-import React,{useState} from 'react'
+import React, { useState } from 'react'
 import TagInput from '../../components/Input/TagInput'
 import { MdClose } from 'react-icons/md';
 import axios from "axios";
+import { useNotes } from '../../zustand/useNotes'; // Import useNotes
 
+const AddEditNotes = ({ noteData, type, onClose }) => {
+  const [title, setTitle] = useState(noteData?.title || "");
+  const [content, setContent] = useState(noteData?.content || "");
+  const [tags, setTags] = useState(noteData?.tags || []);
+  const [error, setError] = useState(null);
+  
+  const { addToNotes, updateNote } = useNotes();
 
-const   AddEditNotes = ({noteData,type,getAllNotes,onClose}) => {
-
-    const [title, setTitle] = useState("");
-    const [content,setContent] = useState("");
-    const [tags, setTags] = useState([])
-    const [error, setError] = useState(null);
-    const token=localStorage.getItem("token");
-    const data=JSON.parse(localStorage.getItem("data"));
-
-    //add notes
-    const addNewNote = async() =>{
-
-        try{
-         const response = await axios.post("http://localhost:8000/add-note",{
-            title,
-            content,
-            tags,
-            data
-         },
-         {
-         headers:{
-            Authorization:token
-         }
-        }
-        )
-         if(response.data){
-                
-                onClose();
-         }
-    } catch(error){
-         if(error.response && error.response.data && error.response.data.message){
-            setError(error.response.data.message);
-         }
-    }
-}
-    //edit notes
-    const editNote=async() =>{
-        const id = data._id;
-        try{
-            const response = await axios.put("http://localhost:8000/edit-note/:" + id ,{
-               title,
-               content,
-               tags,
-            },
-            {
-            headers:{
-               Authorization:token
-            }
-           }
-           )
-            if(response.data){
-                   onClose();
-            }
-       } catch(error){
-            if(error.response && error.response.data && error.response.data.message){
-               setError(error.response.data.message);
-            }
-       }
-    }
-    const handleAddNote=()=>{
-        if(!title){
-            setError("Please enter the title");
-            return;
-        }
-
-        if(!content){
-            setError("Please enter the content");
-            return;
-        }
-        setError("");
-
-        if(type === "edit"){
-            editNote();
-        }else{
-            addNewNote();
-        }
+  const handleSave = async () => {
+    if (!title || !content) {
+      setError("Title and content are required");
+      return;
     }
 
+    try {
+      const success = type === "edit"
+        ? await updateNote(noteData._id, { title, content, tags })
+        : await addToNotes(title, content, tags);
+
+      if (success) {
+        onClose();
+      }
+    } catch (error) {
+      console.error("Save error:", error);
+      setError(error.response?.data?.message || "Failed to save note");
+    }
+  };
 
   return (
     <div className="relative">
@@ -115,8 +64,8 @@ const   AddEditNotes = ({noteData,type,getAllNotes,onClose}) => {
 
         {error && <p className="text-red-500 text-xs pt-4">{error}</p>}
         <button className="w-full text-sm bg-primary text-white p-2 rounded my-1 font-medium mt-5 p-3" 
-        onClick={()=>handleAddNote()}>
-            Add
+        onClick={handleSave}>
+            {type === "edit" ? "Update" : "Add"}
         </button>
     </div>
   )

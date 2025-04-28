@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import Navbar from '../../components/Navbar/Navbarhome';
 import { Link, useNavigate } from "react-router-dom";
 import PasswordInput from "../../components/Input/PasswordInput";
-import { validateEmail } from "../../utils/helper";
-import axios from 'axios'
+import axios from 'axios';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,12 +14,12 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
 
-    if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
+    if (!email) {
+      setError("Please enter the Email.");
       return;
     }
     if (!password) {
-      setError("Please enter the password.");
+      setError("Please enter the Password.");
       return;
     }
 
@@ -33,23 +32,15 @@ const Login = () => {
         password: password,
       });
 
-      console.log(response.data); // Log the response to verify it contains the access token and perhaps user data
-
-      // Handle successful login response
-      const { token, user: userData } = response.data;
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("data", JSON.stringify(userData ));
-        navigate('/dashboard')
-
-        
-       
-      
-    } catch (error) {
-      if (error.response && error.response.data && error.response.data.message) {
-        setError(error.response.data.message);
+      if (response.data.success) {
+        localStorage.setItem("token", `Bearer ${response.data.token}`);
+        localStorage.setItem("data", JSON.stringify(response.data.user));
+        navigate('/dashboard');
       } else {
-        setError("Login failed. Please check your credentials and try again.");
+        setError(response.data.message || "Login failed");
       }
+    } catch (error) {
+      setError(error.response?.data?.message || "Login failed");
       console.error(error); // Log the error for debugging
     }
   };
@@ -64,7 +55,7 @@ const Login = () => {
 
             <input 
               type="text" 
-              placeholder="Email" 
+              placeholder="E-mail" 
               className="w-full text-sm bg-transparent border border-gray-300 px-5 py-3 rounded mb-4 focus:outline-none"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -81,9 +72,9 @@ const Login = () => {
             </button>
 
             <p className="text-sm text-center mt-4">
-              Not registered yet?{" "}
+              Not Registered ?{" "}
               <Link to="/signup" className="font-medium text-primary underline">
-                Create an Account
+                Create Account
               </Link>
             </p>
           </form>

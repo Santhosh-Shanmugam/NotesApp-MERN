@@ -40,18 +40,14 @@ const signup = () => {
           password: password,
         });
   
-        console.log(response.data); // Log the response to verify it contains the access token and perhaps user data
-  
-        // Handle successful register response
-        const { token, user: userData } = response.data;
-        localStorage.setItem("token", response.data.token);
-        localStorage.setItem("data", JSON.stringify(userData ));
-        navigate('/dashboard')
+        if (!response.data.error) {
+          localStorage.setItem("token", `Bearer ${response.data.accessToken}`);
+          localStorage.setItem("data", JSON.stringify(response.data.user));
+          navigate('/dashboard');
+        }
 
       } catch (error) {
-        if (error.response && error.response.data && error.response.data.message) {
-          setError(error.response.data.message);
-        }
+        setError(error.response?.data?.message || "Registration failed");
         console.error(error); // Log the error for debugging
       }
   } 
@@ -95,7 +91,7 @@ const signup = () => {
             
             <p className="text-sm text-center mt-4">
               Already Registered ? {" "}
-              <Link to="/login" className="font-medium text-primary underline">
+              <Link to="/" className="font-medium text-primary underline">
                 Login
               </Link>
             </p>
